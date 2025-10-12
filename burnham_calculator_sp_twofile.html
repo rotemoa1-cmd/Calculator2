@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Burnham Feedstock Calculator</title>
+  <style>
+    :root{{
+      --bg:#0b1020; --card:#121935; --muted:#9fb3c8; --text:#f1f5ff; --accent:#61dafb; --ok:#28a745; --warn:#ffc107;
+      --border:#23305c;
+    }}
+    *{{box-sizing:border-box}}
+    body{{margin:0; font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+         background:linear-gradient(180deg, #0b1020, #0e1430 50%, #0b1020);
+         color:var(--text)}}
+    .container{{max-width:1100px; margin:40px auto; padding:0 16px}}
+
+    .titleRow{{display:flex; align-items:center; gap:18px; margin-bottom:8px; background:#8E27F5; border:1px solid #6a22c7; border-radius:14px; padding:12px}}
+    .logoWrap{{ width:106px; height:106px; border-radius:14px; overflow:hidden; flex:0 0 106px; border:1px solid var(--border); background:#0e1533 }}
+    .logoWrap img{{width:100%; height:100%; display:block; object-fit:contain; background:transparent}}
+    h1{{font-size:28px; margin:0; color:#ffffff}}
+    .sub{{color:#f1f5ff; margin:2px 0 24px 0; font-size:13px}}
+
+    .grid{{display:grid; gap:16px}}
+    @media(min-width:900px){{ .grid{{grid-template-columns: repeat(2, 1fr);} }}}
+
+    .card{{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; box-shadow:0 8px 32px rgba(0,0,0,0.25)}}
+    #cards .card{{ background:#14532d; border-color:#1f6f5f }}
+
+    .row{{display:flex; gap:12px; align-items:center; flex-wrap:wrap}}
+    label{{font-size:12px; color:var(--muted)}}
+    input[type="number"], select, input[type="range"] {{ background:#0e1533; border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:10px; width:100%; }}
+    input[type="range"]{{ padding:6px 0 }}
+
+    .results{{margin-top:12px; display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:12px}}
+    .result{{background:#0e1533; border:1px solid var(--border); border-radius:12px; padding:14px}}
+    .result .big{{font-size:24px; font-weight:900}}
+    .pill{{display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; border:1px solid var(--border); color:var(--muted)}}
+    .section-title{{display:flex; align-items:center; gap:10px; margin-top:8px}}
+
+    #summary{{ background:#5027F5; border:1px solid #3e1fd1; box-shadow:0 8px 28px rgba(80,39,245,0.35)}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="titleRow">
+      <div class="logoWrap">
+        <img id="burnhamLogo" alt="Burnham logo" src="data:image/avif;base64,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" />
+      </div>
+      <div>
+        <h1>Burnham Feedstock Calculator</h1>
+        <div class="sub">Created by O. Rotem, Version 2.10, 10/6/2025</div>
+      </div>
+    </div>
+
+    <div class="grid" id="cards">
+      <!-- Four feed cards identical -->
+      <div class="card" id="feed1">
+        <div class="section-title"><h2 style="margin:0">Feedstock 1</h2><span class="pill">required</span></div>
+        <div class="row" style="margin-top:8px">
+          <div style="flex:2; min-width:220px"><label>Feedstock Type (name)</label><select id="type_0"></select></div>
+          <div style="flex:2; min-width:220px"><label>Feedstock Source</label><select id="source_0"></select></div>
+          <div style="flex:1; min-width:160px"><label>Tons/day</label><input type="number" id="tons_0" min="0" step="0.01" value="0" /></div>
+        </div>
+        <div style="margin-top:8px"><label>TS% (select within range)</label>
+          <div class="row"><input type="range" id="ts_slider_0" min="0" max="100" step="0.01" value="0" style="flex:1" />
+          <input type="number" id="ts_input_0" min="0" max="100" step="0.01" value="0" style="width:120px" /></div>
+          <div class="sub" id="ts_range_0" style="margin-top:6px">Allowed: 0–0%</div>
+        </div>
+      </div>
+
+      <div class="card" id="feed2">
+        <div class="section-title"><h2 style="margin:0">Feedstock 2</h2><span class="pill">required</span></div>
+        <div class="row" style="margin-top:8px">
+          <div style="flex:2; min-width:220px"><label>Feedstock Type (name)</label><select id="type_1"></select></div>
+          <div style="flex:2; min-width:220px"><label>Feedstock Source</label><select id="source_1"></select></div>
+          <div style="flex:1; min-width:160px"><label>Tons/day</label><input type="number" id="tons_1" min="0" step="0.01" value="0" /></div>
+        </div>
+        <div style="margin-top:8px"><label>TS% (select within range)</label>
+          <div class="row"><input type="range" id="ts_slider_1" min="0" max="100" step="0.01" value="0" style="flex:1" />
+          <input type="number" id="ts_input_1" min="0" max="100" step="0.01" value="0" style="width:120px" /></div>
+          <div class="sub" id="ts_range_1" style="margin-top:6px">Allowed: 0–0%</div>
+        </div>
+      </div>
+
+      <div class="card" id="feed3">
+        <div class="section-title"><h2 style="margin:0">Feedstock 3</h2><span class="pill">optional</span></div>
+        <div class="row" style="margin-top:8px">
+          <div style="flex:2; min-width:220px"><label>Feedstock Type (name)</label><select id="type_2"></select></div>
+          <div style="flex:2; min-width:220px"><label>Feedstock Source</label><select id="source_2"></select></div>
+          <div style="flex:1; min-width:160px"><label>Tons/day</label><input type="number" id="tons_2" min="0" step="0.01" value="0" /></div>
+        </div>
+        <div style="margin-top:8px"><label>TS% (select within range)</label>
+          <div class="row"><input type="range" id="ts_slider_2" min="0" max="100" step="0.01" value="0" style="flex:1" />
+          <input type="number" id="ts_input_2" min="0" max="100" step="0.01" value="0" style="width:120px" /></div>
+          <div class="sub" id="ts_range_2" style="margin-top:6px">Allowed: 0–0%</div>
+        </div>
+      </div>
+
+      <div class="card" id="feed4">
+        <div class="section-title"><h2 style="margin:0">Feedstock 4</h2><span class="pill">optional</span></div>
+        <div class="row" style="margin-top:8px">
+          <div style="flex:2; min-width:220px"><label>Feedstock Type (name)</label><select id="type_3"></select></div>
+          <div style="flex:2; min-width:220px"><label>Feedstock Source</label><select id="source_3"></select></div>
+          <div style="flex:1; min-width:160px"><label>Tons/day</label><input type="number" id="tons_3" min="0" step="0.01" value="0" /></div>
+        </div>
+        <div style="margin-top:8px"><label>TS% (select within range)</label>
+          <div class="row"><input type="range" id="ts_slider_3" min="0" max="100" step="0.01" value="0" style="flex:1" />
+          <input type="number" id="ts_input_3" min="0" max="100" step="0.01" value="0" style="width:120px" /></div>
+          <div class="sub" id="ts_range_3" style="margin-top:6px">Allowed: 0–0%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="summary">
+      <div class="section-title">
+        <h2 style="margin:0">Blend Summary</h2>
+        <span class="pill" id="countPill">0 of 4 selected</span>
+      </div>
+      <div class="results">
+        <div class="result"><div class="muted">Total Flow</div><div class="big" id="totalFlow">0.00</div><div class="muted">tons/day</div></div>
+        <div class="result"><div class="muted">Blended TS</div><div class="big" id="blendTS">0.00%</div><div class="muted">by weight</div></div>
+        <div class="result"><div class="muted">Blend Energy Intensity</div><div class="big" id="blendMMBtuPerTon">0.000</div><div class="muted">MMBtu/ton</div></div>
+        <div class="result"><div class="muted">Total Energy</div><div class="big" id="totalMMBtuPerDay">0.000</div><div class="muted">MMBtu/day</div></div>
+      </div>
+
+      <details style="margin-top:12px">
+        <summary class="pill">Show per-feedstock details</summary>
+        <table class="table" id="detailTable">
+          <thead><tr><th>Type</th><th>Source</th><th>TS used</th><th>VS/TS</th><th>BMP (scf/lbVS)</th><th>MMBtu/ton</th><th>MMBtu/day</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </details>
+    </div>
+  </div>
+
+  <!-- External JS only -->
+  <script src="burnham_app_sp.js"></script>
+</body>
+</html>
